@@ -10,7 +10,7 @@ def test_benchmark():
     df['Joga'] = df['Joga'].apply(
         lambda x: 1 if x == 'Sim' else 0
     )
-    dt = DecisionTree(
+    dt = DecisionTreeClassifier(
         attributes = [col for col in df.columns if col != 'Joga'],
         target_attribute = 'Joga'
     )
