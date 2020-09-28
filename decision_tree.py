@@ -2,19 +2,40 @@ import pandas as pd
 import numpy as np
 import math
 
-class Tree:
+class DecisionTree:
     def __init__(self):
-        self.root = None
+        self.output_class = None
+        self.feature = None
+        self.information_gain = None
+        self.subsets = {}
 
-    def add_root(self, root):
-        self.root = root
+
+    def get_class(self, instance):
+        if self.output_class is not None:
+            return self.output_class
+
+        val = instance[self.feature]
+        return self.subsets[val].get_class(instance)
+
+
+    def log_tree(self, level=0):
+        if self.feature:
+            print('%s===== %s (%.3f) =====' % (' ' * (level * 5), self.feature, self.information_gain))
+        if self.output_class is not None:
+            print('%sPred. => %s' % (' ' * (level * 5), self.output_class))
+
+        level += 1
+        for key, value in self.subsets.items():
+            print('\n%s%s = %s:' % (' ' * (level * 5), self.feature, key))
+            value.log_tree(level)
+
 
 
 class DecisionTreeClassifier:
     def __init__(self, attributes, target_attribute):
         self.attributes = attributes
         self.target_attribute = target_attribute
-        self.decision_tree = Tree()
+        self.decision_tree = None
 
 
     def __split_data(self, data, attribute):
@@ -81,42 +102,46 @@ class DecisionTreeClassifier:
 
 
     def __generate_decision_tree(self, data, attributes):
-        node = {}
+        node = DecisionTree()
 
         # All tuples are of the same class
         distinct_labels = data[self.target_attribute].unique()
         if len(distinct_labels) == 1:
-            node['class'] = distinct_labels[0]
+            node.output_class = distinct_labels[0]
             return node
 
         # No more attributes, get the most common class
         if len(attributes) == 0:
-            node['class'] = data[self.target_attribute].mode().iloc[0]
+            node.output_class = data[self.target_attribute].mode().iloc[0]
+            return node
 
         best_attr, score = self.__get_best_attribute(data, attributes)
         attributes.remove(best_attr)
-        node['splitting_attribute'] = best_attr
-        node['splitting_attribute_score'] = score
+        node.feature = best_attr
+        node.information_gain = score
 
         subsets = self.__split_data(data, best_attr)
         for value, subset in subsets:
             if len(subset) == 0:
-                node['class'] = subset[self.target_attribute].mode().iloc[0]
+                node.output_class = subset[self.target_attribute].mode().iloc[0]
             else:
-                if 'splitting_values' not in node:
-                    node['splitting_values'] = {}
-                node['splitting_values'][value] = self.__generate_decision_tree(subset, attributes)
+                node.subsets[value] = self.__generate_decision_tree(subset, attributes)
         return node
 
 
+    def predict(self, instance):
+        if self.decision_tree is None:
+            print('Decision tree has not been trained yet!!')
+
+        return self.decision_tree.get_class(instance)
+
 
     def train(self, data):
-        print(self.__generate_decision_tree(data, self.attributes))
-        # best_attr = self.__get_best_attribute(data)
-        # self.decision_tree.add_root({
-        #     'attribute': best_attr,
-        #     'outcomes': []
-        # })
-        # Split into subsets based on attribute
-        # subsets = self.__split_data(data, best_attr)
-        # Hago las particiones y llamo a la función con cada partición
+        tree = self.__generate_decision_tree(data, self.attributes)
+        self.decision_tree = tree
+
+
+    def print_tree(self):
+        if self.decision_tree is None:
+            print('Decision tree has not been trained yet!!')
+        self.decision_tree.log_tree()

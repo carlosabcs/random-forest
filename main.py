@@ -15,6 +15,21 @@ def test_benchmark():
         target_attribute = 'Joga'
     )
     dt.train(df)
+    print(
+        dt.predict({'Tempo':'Nublado', 'Temperatura':'Quente', 'Umidade':'Alta', 'Ventoso':'FALSO'}),
+        ' == ',
+        1
+    )
+    print(
+        dt.predict({'Tempo':'Chuvoso', 'Temperatura':'Quente', 'Umidade':'Alta', 'Ventoso':'Verdadeiro'}),
+        ' == ',
+        0
+    )
+    print(
+        dt.predict({'Tempo':'Ensolarado', 'Temperatura':'Quente', 'Umidade':'Normal', 'Ventoso':'Falso'}),
+        ' == ',
+        1
+    )
 
 
 def main():
