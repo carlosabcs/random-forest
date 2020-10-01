@@ -6,29 +6,27 @@ from decision_tree import DecisionTreeClassifier
 
 
 def test_benchmark():
-    df = pd.read_csv('./dados_benchmark.csv', sep=';')
-    df['Joga'] = df['Joga'].apply(
-        lambda x: 1 if x == 'Sim' else 0
-    )
+    df = pd.read_csv('./dados_benchmark_v2.csv', sep=';')
     dt = DecisionTreeClassifier(
         attributes = [col for col in df.columns if col != 'Joga'],
         target_attribute = 'Joga'
     )
     dt.train(df)
+    dt.print_tree()
     print(
-        dt.predict({'Tempo':'Nublado', 'Temperatura':'Quente', 'Umidade':'Alta', 'Ventoso':'FALSO'}),
+        dt.predict({'Tempo':'Nublado', 'Temperatura':'Quente', 'Umidade':'Alta', 'Ventoso':1}),
         ' == ',
-        1
+        'Sim'
     )
     print(
-        dt.predict({'Tempo':'Chuvoso', 'Temperatura':'Quente', 'Umidade':'Alta', 'Ventoso':'Verdadeiro'}),
+        dt.predict({'Tempo':'Chuvoso', 'Temperatura':'Quente', 'Umidade':'Alta', 'Ventoso':10}),
         ' == ',
-        0
+        'Nao'
     )
     print(
-        dt.predict({'Tempo':'Ensolarado', 'Temperatura':'Quente', 'Umidade':'Normal', 'Ventoso':'Falso'}),
+        dt.predict({'Tempo':'Ensolarado', 'Temperatura':'Quente', 'Umidade':'Normal', 'Ventoso':1}),
         ' == ',
-        1
+        'Sim'
     )
 
 

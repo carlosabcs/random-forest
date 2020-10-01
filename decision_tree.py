@@ -15,7 +15,22 @@ class DecisionTree:
             return self.output_class
 
         val = instance[self.feature]
-        return self.subsets[val].get_class(instance)
+        if type(val) != str:
+            for key, value in self.subsets.items():
+                comparable_value = float(key[2:])
+                if '0_' in key:
+                    if val <= comparable_value:
+                        return value.get_class(instance)
+                    else:
+                        return self.subsets['1' + key[1:]].get_class(instance)
+                # else:
+                #     # Greater than
+                #     if val > comparable_value:
+                #         return value.get_class(instance)
+                #     else:
+                #         return self.subsets['0' + key[1:]].get_class(instance)
+        else:
+            return self.subsets[val].get_class(instance)
 
 
     def log_tree(self, level=0):
@@ -38,13 +53,34 @@ class DecisionTreeClassifier:
         self.decision_tree = None
 
 
+    def __discretize_attributes(self, data):
+        new_data = data.copy()
+        for col_name, dtype in dict(data.dtypes).items():
+            if col_name == self.target_attribute or '_discretized' in col_name:
+                continue
+
+            if dtype != 'object':
+                mean = data[col_name].mean()
+                new_data[col_name + '_discretized'] = data.apply(
+                    lambda row: 1 if row[col_name] > mean else 0,
+                    axis=1
+                )
+        return new_data
+
+
     def __split_data(self, data, attribute):
+        discretized = False
+        if data[attribute].dtype != 'object':
+            discretized = True
+            mean = data[attribute].mean()
+            attribute += '_discretized'
+
         possible_outcomes = data[attribute].unique()
         subsets = []
         for outcome in possible_outcomes:
             subsets.append(
                 (
-                    outcome,
+                    outcome if not discretized else str(outcome) + '_' + str(mean),
                     data[data[attribute] == outcome]
                 )
             )
@@ -93,7 +129,10 @@ class DecisionTreeClassifier:
         best_attr = attributes[0]
         for attr in attributes:
             # Get info based on certain attribute
-            local_entropy = self.__get_local_entropy(data, attr)
+            if data[attr].dtype != 'object':
+                local_entropy = self.__get_local_entropy(data, attr + '_discretized')
+            else:
+                local_entropy = self.__get_local_entropy(data, attr)
             gain = total_entropy - local_entropy
             if gain > best_gain:
                 best_gain = gain
@@ -103,6 +142,9 @@ class DecisionTreeClassifier:
 
     def __generate_decision_tree(self, data, attributes):
         node = DecisionTree()
+
+        # Discretize all non categorical data
+        data = self.__discretize_attributes(data)
 
         # All tuples are of the same class
         distinct_labels = data[self.target_attribute].unique()

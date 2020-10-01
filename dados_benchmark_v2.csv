@@ -1,0 +1,15 @@
+Tempo;Temperatura;Umidade;Ventoso;Joga
+Ensolarado;Quente;Alta;1;Nao
+Ensolarado;Quente;Alta;10;Nao
+Nublado;Quente;Alta;1;Sim
+Chuvoso;Amena;Alta;1;Sim
+Chuvoso;Fria;Normal;1;Sim
+Chuvoso;Fria;Normal;10;Nao
+Nublado;Fria;Normal;10;Sim
+Ensolarado;Amena;Alta;1;Nao
+Ensolarado;Fria;Normal;1;Sim
+Chuvoso;Amena;Normal;1;Sim
+Ensolarado;Amena;Normal;10;Sim
+Nublado;Amena;Alta;10;Sim
+Nublado;Quente;Normal;1;Sim
+Chuvoso;Amena;Alta;10;Nao
