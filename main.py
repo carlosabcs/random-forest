@@ -14,17 +14,17 @@ def test_benchmark():
     dt.train(df)
     dt.print_tree()
     print(
-        dt.predict({'Tempo':'Nublado', 'Temperatura':'Quente', 'Umidade':'Alta', 'Ventoso':1}),
+        dt.predict({'Tempo':6, 'Temperatura':10, 'Umidade':8, 'Ventoso':1}),
         ' == ',
         'Sim'
     )
     print(
-        dt.predict({'Tempo':'Chuvoso', 'Temperatura':'Quente', 'Umidade':'Alta', 'Ventoso':10}),
+        dt.predict({'Tempo':0, 'Temperatura':10, 'Umidade':8, 'Ventoso':10}),
         ' == ',
         'Nao'
     )
     print(
-        dt.predict({'Tempo':'Ensolarado', 'Temperatura':'Quente', 'Umidade':'Normal', 'Ventoso':1}),
+        dt.predict({'Tempo':12, 'Temperatura':10, 'Umidade':4, 'Ventoso':1}),
         ' == ',
         'Sim'
     )

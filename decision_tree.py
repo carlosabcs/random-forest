@@ -74,8 +74,9 @@ class DecisionTreeClassifier:
             discretized = True
             mean = data[attribute].mean()
             attribute += '_discretized'
-
-        possible_outcomes = data[attribute].unique()
+            possible_outcomes = [0, 1]
+        else:
+            possible_outcomes = data[attribute].unique()
         subsets = []
         for outcome in possible_outcomes:
             subsets.append(
@@ -121,7 +122,6 @@ class DecisionTreeClassifier:
 
 
     def __get_best_attribute(self, data, attributes):
-        # TODO: How to treat continuous values?
         # Get info of all dataset
         total_entropy = self.__get_general_entropy(data)
 
