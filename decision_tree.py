@@ -165,7 +165,7 @@ class DecisionTreeClassifier:
         subsets = self.__split_data(data, best_attr)
         for value, subset in subsets:
             if len(subset) == 0:
-                node.output_class = subset[self.target_attribute].mode().iloc[0]
+                node.output_class = data[self.target_attribute].mode().iloc[0]
             else:
                 node.subsets[value] = self.__generate_decision_tree(subset, attributes)
         return node
