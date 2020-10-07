@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import math
+import random
 
 class DecisionTree:
     def __init__(self):
@@ -47,10 +48,21 @@ class DecisionTree:
 
 
 class DecisionTreeClassifier:
-    def __init__(self, attributes, target_attribute):
-        self.attributes = attributes
+    def __init__(self, target_attribute, n_random_attributes):
+        self.attributes = []
+        self.attributes_outcomes = None
         self.target_attribute = target_attribute
         self.decision_tree = None
+        self.n_random_attributes = n_random_attributes
+
+
+    def __save_possible_attributes_outcomes(self, data):
+        self.attributes_outcomes = {}
+        for attribute in self.attributes:
+            if data[attribute].dtype != 'int64':
+                self.attributes_outcomes[attribute] = data[attribute].unique()
+            else:
+                self.attributes_outcomes[attribute + '_discretized'] = [0, 1]
 
 
     def __discretize_attributes(self, data):
@@ -87,6 +99,18 @@ class DecisionTreeClassifier:
             )
         return subsets
 
+    def __choose_random_attributes(self, attributes):
+        size = len(attributes)
+        if size <= self.n_random_attributes:
+            return attributes
+
+        random_attributes = []
+        while len(random_attributes) < self.n_random_attributes:
+            index = random.randint(0, size - 2)
+            if attributes[index] not in random_attributes:
+                random_attributes.append(attributes[index])
+        return random_attributes
+
 
     def __get_general_entropy(self, data):
         total_count = len(data.index)
@@ -101,10 +125,8 @@ class DecisionTreeClassifier:
 
     def __get_local_entropy(self, data, attribute):
         total_count = len(data.index)
-        possible_outcomes = data[attribute].unique()
-
         entropy = 0
-        for outcome in possible_outcomes:
+        for outcome in self.attributes_outcomes[attribute]:
             subset = data[data[attribute] == outcome]
             local_count = len(subset) # local count
 
@@ -123,8 +145,8 @@ class DecisionTreeClassifier:
 
     def __get_best_attribute(self, data, attributes):
         # Get info of all dataset
+        attributes = self.__choose_random_attributes(attributes)
         total_entropy = self.__get_general_entropy(data)
-
         best_gain = -1
         best_attr = attributes[0]
         for attr in attributes:
@@ -178,7 +200,12 @@ class DecisionTreeClassifier:
         return self.decision_tree.get_class(instance)
 
 
-    def train(self, data):
+    def fit(self, data):
+        # TODO: Ensure data types.
+        self.attributes = [
+            col for col in data.columns if col != self.target_attribute
+        ]
+        self.__save_possible_attributes_outcomes(data)
         tree = self.__generate_decision_tree(data, self.attributes)
         self.decision_tree = tree
 
