@@ -8,6 +8,7 @@ class DecisionTree:
         self.output_class = None
         self.feature = None
         self.information_gain = None
+        self.majority_class = None
         self.subsets = {}
 
 
@@ -31,6 +32,8 @@ class DecisionTree:
                 #     else:
                 #         return self.subsets['0' + key[1:]].get_class(instance)
         else:
+            if val not in self.subsets:
+                return self.majority_class
             return self.subsets[val].get_class(instance)
 
 
@@ -165,6 +168,9 @@ class DecisionTreeClassifier:
     def __generate_decision_tree(self, data, attributes):
         node = DecisionTree()
 
+        # Set majority class for node
+        node.majority_class = data[self.target_attribute].mode().iloc[0]
+
         # Discretize all non categorical data
         data = self.__discretize_attributes(data)
 
@@ -176,7 +182,7 @@ class DecisionTreeClassifier:
 
         # No more attributes, get the most common class
         if len(attributes) == 0:
-            node.output_class = data[self.target_attribute].mode().iloc[0]
+            node.output_class = node.majority_class
             return node
 
         best_attr, score = self.__get_best_attribute(data, attributes)
@@ -187,7 +193,7 @@ class DecisionTreeClassifier:
         subsets = self.__split_data(data, best_attr)
         for value, subset in subsets:
             if len(subset) == 0:
-                node.output_class = data[self.target_attribute].mode().iloc[0]
+                node.output_class = node.majority_class
             else:
                 node.subsets[value] = self.__generate_decision_tree(subset, attributes)
         return node
