@@ -62,7 +62,7 @@ class DecisionTreeClassifier:
     def __save_possible_attributes_outcomes(self, data):
         self.attributes_outcomes = {}
         for attribute in self.attributes:
-            if data[attribute].dtype != 'int64':
+            if data[attribute].dtype == 'object':
                 self.attributes_outcomes[attribute] = data[attribute].unique()
             else:
                 self.attributes_outcomes[attribute + '_discretized'] = [0, 1]
@@ -199,10 +199,16 @@ class DecisionTreeClassifier:
         return node
 
 
-    def predict(self, instance):
+    def predict(self, data):
+        predictions = []
+        for _, row in data.iterrows():
+            predictions.append(self.predict_single_instance(row))
+        return predictions
+
+
+    def predict_single_instance(self, instance):
         if self.decision_tree is None:
             print('Decision tree has not been trained yet!!')
-
         return self.decision_tree.get_class(instance)
 
 
