@@ -14,26 +14,26 @@ class CrossValidator():
 
     def get_folds(self, data, k):
         # Get subsets based on the target class
-        positive = data[data[self.target_attribute] == 1]
-        negative = data[data[self.target_attribute] == 0]
+        outcomes = data[self.target_attribute].unique()
 
-        # Split the subsets into stratified sub-subsets
-        positive_folds = np.split(
-            positive.sample(frac=1),
-            [ int((1 / k) * i * len(positive)) for i in range(1, k) ]
-        )
-        negative_folds = np.split(
-            negative.sample(frac=1),
-            [ int((1 / k) * i * len(negative)) for i in range(1, k) ]
-        )
+        splitted_folds = []
+        for i, outcome in enumerate(outcomes):
+            subset = data[data[self.target_attribute] == outcome]
+            # Split the subsets into stratified sub-subsets
+            splitted_folds.append(
+                np.split(
+                    subset.sample(frac=1),
+                    [ int((1 / k) * i * len(subset)) for i in range(1, k) ]
+                )
+            )
         # Concat stratified subsets to create stratified sets
         folds = []
         for i in range(k):
+            stratified_subsets = []
+            for k in range(len(outcomes)):
+                stratified_subsets.append(splitted_folds[k][i])
             folds.append(
-                pd.concat([
-                    positive_folds[i],
-                    negative_folds[i]
-                ])
+                pd.concat(stratified_subsets)
             )
         return folds
 

@@ -12,6 +12,7 @@ class RandomForest:
         self.target_name = target_name
         self.number_random_attributes = number_random_attributes
 
+
     def __max_value(self, list_prediction):
         count = collections.Counter(list_prediction)
         mayor = 0
@@ -87,6 +88,7 @@ class RandomForest:
 
 
     def fit(self, data):
+        data.reset_index(drop=True, inplace=True)
         bootstrap = Bootstrap(self.n_trees)
         n_baggings, index_test = bootstrap.generate_bootstraps(data)
 
@@ -98,6 +100,7 @@ class RandomForest:
 
 
     def predict(self, data):
+        data.reset_index(drop=True, inplace=True)
         index_test = data.index.tolist()
         result, index_result = self.__votation(data, index_test)
         target =  data[self.target_name].iloc[index_result.tolist()]
