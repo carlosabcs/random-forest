@@ -13,6 +13,9 @@ class CrossValidator():
 
 
     def get_folds(self, data, k):
+        '''
+        Gets k stratified folds from data
+        '''
         # Get subsets based on the target class
         outcomes = data[self.target_attribute].unique()
 
@@ -44,10 +47,13 @@ class CrossValidator():
         k_folds,
         r = 1
     ):
+        '''
+        Makes a cross validation from data using k_folds and r repetitions
+        '''
         print(
             '===== RF with n_trees = %s and n_attributes = %s =====' % (
                 self.model.n_trees,
-                self.model.number_random_attributes
+                self.model.n_random_attributes
             )
         )
         global_acc_list = []
@@ -66,7 +72,7 @@ class CrossValidator():
                 acc_list.append(accuracy)
                 global_acc_list.append(accuracy)
                 if r == 1:
-                    print('Fold %s: acc(%.3f)' % (
+                    print('Fold %s: %.3f' % (
                         i + 1, accuracy,
                     ))
             print('Average accuracy: %.3f (%.3f)' % (

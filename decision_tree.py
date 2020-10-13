@@ -6,46 +6,51 @@ import random
 class DecisionTree:
     def __init__(self):
         self.output_class = None
-        self.feature = None
+        self.target_feature = None
         self.information_gain = None
         self.majority_class = None
-        self.subsets = {}
+        self.childs = {}
 
 
     def get_class(self, instance):
+        '''
+        Gets the predicted class of an unlabelled instance
+        through the decision tree
+        '''
         if self.output_class is not None:
             return self.output_class
 
-        val = instance[self.feature]
+        val = instance[self.target_feature]
         if type(val) != str:
-            for key, value in self.subsets.items():
+            for key, value in self.childs.items():
                 comparable_value = float(key[2:])
                 if '0_' in key:
                     if val <= comparable_value:
                         return value.get_class(instance)
                     else:
-                        return self.subsets['1' + key[1:]].get_class(instance)
-                # else:
-                #     # Greater than
-                #     if val > comparable_value:
-                #         return value.get_class(instance)
-                #     else:
-                #         return self.subsets['0' + key[1:]].get_class(instance)
+                        return self.childs['1' + key[1:]].get_class(instance)
+                else:
+                    # Greater than
+                    if val > comparable_value:
+                        return value.get_class(instance)
+                    else:
+                        return self.childs['0' + key[1:]].get_class(instance)
         else:
-            if val not in self.subsets:
+            if val not in self.childs:
                 return self.majority_class
-            return self.subsets[val].get_class(instance)
+            return self.childs[val].get_class(instance)
 
 
     def log_tree(self, level=0):
-        if self.feature:
-            print('%s===== %s (%.3f) =====' % (' ' * (level * 5), self.feature, self.information_gain))
+        '''Prints the tree in a readable way'''
+        if self.target_feature:
+            print('%s===== %s (%.3f) =====' % (' ' * (level * 5), self.target_feature, self.information_gain))
         if self.output_class is not None:
             print('%sPred. => %s' % (' ' * (level * 5), self.output_class))
 
         level += 1
-        for key, value in self.subsets.items():
-            print('\n%s%s = %s:' % (' ' * (level * 5), self.feature, key))
+        for key, value in self.childs.items():
+            print('\n%s%s = %s:' % (' ' * (level * 5), self.target_feature, key))
             value.log_tree(level)
 
 
@@ -60,6 +65,9 @@ class DecisionTreeClassifier:
 
 
     def __save_possible_attributes_outcomes(self, data):
+        '''
+        Fills a dictionary with the possible outcomes for each attribute
+        '''
         self.attributes_outcomes = {}
         for attribute in self.attributes:
             if data[attribute].dtype == 'object':
@@ -69,6 +77,10 @@ class DecisionTreeClassifier:
 
 
     def __discretize_attributes(self, data):
+        '''
+        For each numerical type, adds a discretized version of values
+        based on the average
+        '''
         new_data = data.copy()
         for col_name, dtype in dict(data.dtypes).items():
             if col_name == self.target_attribute or '_discretized' in col_name:
@@ -84,6 +96,9 @@ class DecisionTreeClassifier:
 
 
     def __split_data(self, data, attribute):
+        '''
+        Splits the data based on the possible outcomes of a certain attribute
+        '''
         discretized = False
         if data[attribute].dtype != 'object':
             discretized = True
@@ -102,7 +117,11 @@ class DecisionTreeClassifier:
             )
         return subsets
 
+
     def __choose_random_attributes(self, attributes):
+        '''
+        Randomnly selects a subset from a list of attributes
+        '''
         size = len(attributes)
         if size <= self.n_random_attributes:
             return attributes
@@ -116,6 +135,9 @@ class DecisionTreeClassifier:
 
 
     def __get_general_entropy(self, data):
+        '''
+        Calculates the entropy of the whole dataset passed to the function
+        '''
         total_count = len(data.index)
         possible_outcomes = data[self.target_attribute].unique()
         entropy = 0
@@ -127,6 +149,9 @@ class DecisionTreeClassifier:
 
 
     def __get_local_entropy(self, data, attribute):
+        '''
+        Calculates the entropy of the data just for a certain attribute
+        '''
         total_count = len(data.index)
         entropy = 0
         for outcome in self.attributes_outcomes[attribute]:
@@ -147,6 +172,9 @@ class DecisionTreeClassifier:
 
 
     def __get_best_attribute(self, data, attributes):
+        '''
+        Calculates and returns the attribute with the largest information gain
+        '''
         # Get info of all dataset
         attributes = self.__choose_random_attributes(attributes)
         total_entropy = self.__get_general_entropy(data)
@@ -165,7 +193,10 @@ class DecisionTreeClassifier:
         return best_attr, best_gain
 
 
-    def __generate_decision_tree(self, data, attributes):
+    def __generate_decision_tree(self, data):
+        '''
+        Generates the decision tree for the data
+        '''
         node = DecisionTree()
 
         # Set majority class for node
@@ -181,13 +212,13 @@ class DecisionTreeClassifier:
             return node
 
         # No more attributes, get the most common class
-        if len(attributes) == 0:
+        if len(self.attributes) == 0:
             node.output_class = node.majority_class
             return node
 
-        best_attr, score = self.__get_best_attribute(data, attributes)
-        attributes.remove(best_attr)
-        node.feature = best_attr
+        best_attr, score = self.__get_best_attribute(data, self.attributes)
+        self.attributes.remove(best_attr)
+        node.target_feature = best_attr
         node.information_gain = score
 
         subsets = self.__split_data(data, best_attr)
@@ -195,11 +226,14 @@ class DecisionTreeClassifier:
             if len(subset) == 0:
                 node.output_class = node.majority_class
             else:
-                node.subsets[value] = self.__generate_decision_tree(subset, attributes)
+                node.childs[value] = self.__generate_decision_tree(subset)
         return node
 
 
     def predict(self, data):
+        '''
+        Returns the predictions for a test set
+        '''
         predictions = []
         for _, row in data.iterrows():
             predictions.append(self.predict_single_instance(row))
@@ -207,22 +241,30 @@ class DecisionTreeClassifier:
 
 
     def predict_single_instance(self, instance):
+        '''
+        Returns the prediction for a single instance
+        '''
         if self.decision_tree is None:
             print('Decision tree has not been trained yet!!')
         return self.decision_tree.get_class(instance)
 
 
     def fit(self, data):
-        # TODO: Ensure data types.
+        '''
+        Trains the decision tree for the data
+        '''
         self.attributes = [
             col for col in data.columns if col != self.target_attribute
         ]
         self.__save_possible_attributes_outcomes(data)
-        tree = self.__generate_decision_tree(data, self.attributes)
+        tree = self.__generate_decision_tree(data)
         self.decision_tree = tree
 
 
     def print_tree(self):
+        '''
+        Prints the tree generated for the training data
+        '''
         if self.decision_tree is None:
             print('Decision tree has not been trained yet!!')
         self.decision_tree.log_tree()
