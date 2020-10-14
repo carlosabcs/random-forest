@@ -49,7 +49,7 @@ The output should be like:
           Pred. => Nao
 ```
 
-### Testing datasets trainning and prediction
+### Testing datasets training and prediction
 For running a repeated cross validation with 2 repetitions and 5 folds, using 8 trees with 6 random attributes, the command to be run should be:
 ```bash
 python main.py --opt test-dataset --dataset house-votes-84.tsv --target_attribute target --n_trees 8 --n_attributes 6 --k_folds 5 --r 2
