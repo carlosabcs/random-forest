@@ -28,10 +28,10 @@ class Bootstrap:
         unique_indexes_train = []
 
         while not self.__is_valid_bootstrap(size_df, unique_indexes_train):
-            indexes_train = random.choices(index_original_df, k = size_df)
+            indexes_train = random.choices(indexes_original_df, k = size_df)
             unique_indexes_train = np.unique(indexes_train)
 
-        indexes_test = np.delete(index_original_df, unique_indexes_train)
+        indexes_test = np.delete(indexes_original_df, unique_indexes_train)
         return indexes_train, indexes_test
 
 

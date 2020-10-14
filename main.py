@@ -11,6 +11,7 @@ from random_forest import RandomForest
 from cross_validator import CrossValidator
 
 def test_benchmark_categorical():
+    print('** Categorical benchmark **')
     df = pd.read_csv('./dados_benchmark.csv', sep=';')
     dt = DecisionTreeClassifier(
         target_attribute = 'Joga',
@@ -21,6 +22,7 @@ def test_benchmark_categorical():
 
 
 def test_benchmark_numerical():
+    print('\n** Numerical benchmark **')
     df = pd.read_csv('./dados_benchmark_v2.csv', sep=';')
     dt = DecisionTreeClassifier(
         target_attribute = 'Joga',
@@ -36,14 +38,14 @@ def main():
     parser.add_argument('--dataset', help='The dataset filename.', default='', required=False)
     parser.add_argument('--target_attribute', help='Target attribute to be predicted.', default='', required=False)
     parser.add_argument('--n_trees', help='The number of trees. The default is 5.', default=5, type=int, required=False)
-    parser.add_argument('--n_attributes', help='The number of attributes. The default is the squared root of all attributes.', default=-1, type=int, required=False)
+    parser.add_argument('--n_attributes', help='The number of attributes. The default is the squared root of otal attributes.', default=-1, type=int, required=False)
     parser.add_argument('--k_folds', help='The number of folds for cross validation. The default is 5', default=5, type=int, required=False)
     parser.add_argument('--r', help='The number of repetitions for repeated cross validation. The default is 1', default=1, type=int, required=False)
     args = parser.parse_args()
 
     if args.opt == 'test-benchmark':
-        test_benchmark_numerical()
         test_benchmark_categorical()
+        test_benchmark_numerical()
 
     if args.opt == 'test-dataset':
         if args.dataset == '' or not os.path.isfile('./' + args.dataset):
@@ -76,6 +78,7 @@ def main():
             RandomForest(n_trees, args.target_attribute, n_random_attributes)
         )
         cv.cross_validate(data, args.k_folds, args.r)
+        print('\nGlobal accuracy: %.3f (%.3f)' % (cv.accuracy, cv.accuracy_std))
 
 
 if __name__ == "__main__":

@@ -64,8 +64,7 @@ class CrossValidator():
             acc_list = []
             for i in range(len(folds)):
                 # Train data is composed by all folds except the current one
-                if r == 1:
-                    print('- Fold %s:' % (i + 1))
+                print('- Fold %s:' % (i + 1))
                 train_data = pd.concat(folds[:i] + folds[i+1:])
                 self.model.fit(train_data)
                 # Test data is composed by current fold
@@ -73,7 +72,7 @@ class CrossValidator():
                 accuracy, _ = self.model.predict(test_data)
                 acc_list.append(accuracy)
                 global_acc_list.append(accuracy)
-            print('\nAverage accuracy: %.3f (%.3f)' % (
+            print('\nAverage accuracy: %.3f (%.3f)\n' % (
                 np.mean(acc_list), np.std(acc_list)
             ))
         self.accuracy = np.mean(global_acc_list)

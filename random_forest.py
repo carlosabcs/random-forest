@@ -65,11 +65,11 @@ class RandomForest:
             for key_bagging in dic_values_predicted:
                 value_predicted = dic_values_predicted[key_bagging].loc[index][1]
                 list_values_predicted.append(value_predicted)
-            dic_values_per_index[ind] = list_values_predicted
+            dic_values_per_index[index] = list_values_predicted
 
         dic_prediction = {}
         for index in dic_values_per_index:
-            dic_prediction[value] = self.dic_values_per_index(dic_values[index])
+            dic_prediction[index] = self.__max_value(dic_values_per_index[index])
         return dic_prediction, indexes_prediction
 
 
@@ -120,7 +120,7 @@ class RandomForest:
 
     def predict(self, data):
         '''
-        Given a dataset, generate the predictions based on the Random Forest 
+        Given a dataset, generate the predictions based on the Random Forest
         model generated previously
         '''
         data.reset_index(drop=True, inplace=True)
