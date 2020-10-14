@@ -3,9 +3,9 @@ import numpy as np
 
 
 class CrossValidator():
-    def __init__(self, target_attribute, model):
+    def __init__(self, model):
         self.model = model
-        self.target_attribute = target_attribute
+        self.target_attribute = model.target_attribute
         self.accuracy = None
         self.accuracy_std = None
         self.f1_score = None
@@ -64,6 +64,8 @@ class CrossValidator():
             acc_list = []
             for i in range(len(folds)):
                 # Train data is composed by all folds except the current one
+                if r == 1:
+                    print('- Fold %s:' % (i + 1))
                 train_data = pd.concat(folds[:i] + folds[i+1:])
                 self.model.fit(train_data)
                 # Test data is composed by current fold
@@ -71,11 +73,7 @@ class CrossValidator():
                 accuracy, _ = self.model.predict(test_data)
                 acc_list.append(accuracy)
                 global_acc_list.append(accuracy)
-                if r == 1:
-                    print('Fold %s: %.3f' % (
-                        i + 1, accuracy,
-                    ))
-            print('Average accuracy: %.3f (%.3f)' % (
+            print('\nAverage accuracy: %.3f (%.3f)' % (
                 np.mean(acc_list), np.std(acc_list)
             ))
         self.accuracy = np.mean(global_acc_list)

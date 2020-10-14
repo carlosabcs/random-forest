@@ -1,8 +1,11 @@
+import argparse
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import random
-from sklearn.preprocessing import LabelEncoder
+import json
+import os.path
+
 from decision_tree import DecisionTreeClassifier
 from random_forest import RandomForest
 from cross_validator import CrossValidator
@@ -15,21 +18,6 @@ def test_benchmark_categorical():
     )
     dt.fit(df)
     dt.print_tree()
-    print(
-        dt.predict_single_instance({'Tempo': 'Ensolarado', 'Temperatura': 'Quente', 'Umidade': 'Alta', 'Ventoso': 'Falso'}),
-        ' == ',
-        'Nao'
-    )
-    print(
-        dt.predict_single_instance({'Tempo': 'Chuvoso', 'Temperatura': 'Quente', 'Umidade': 'Alta', 'Ventoso': 'Falso'}),
-        ' == ',
-        'Sim'
-    )
-    print(
-        dt.predict_single_instance({'Tempo': 'Ensolarado', 'Temperatura': 'Quente', 'Umidade': 'Normal', 'Ventoso': 'Falso'}),
-        ' == ',
-        'Sim'
-    )
 
 
 def test_benchmark_numerical():
@@ -40,62 +28,54 @@ def test_benchmark_numerical():
     )
     dt.fit(df)
     dt.print_tree()
-    print(
-        dt.predict_single_instance({'Tempo': 12, 'Temperatura': 10, 'Umidade': 8, 'Ventoso': 1}),
-        ' == ',
-        'Nao'
-    )
-    print(
-        dt.predict_single_instance({'Tempo': 0, 'Temperatura': 10, 'Umidade': 8, 'Ventoso': 1}),
-        ' == ',
-        'Sim'
-    )
-    print(
-        dt.predict_single_instance({'Tempo': 12, 'Temperatura': 10, 'Umidade': 4, 'Ventoso': 1}),
-        ' == ',
-        'Sim'
-    )
 
 
 def main():
-    # random.seed(1)
-    test_benchmark_numerical()
-    test_benchmark_categorical()
-    data = pd.read_csv(
-        'house-votes-84.tsv',
-        delimiter='\t',
-        dtype={
-            'handicapped-infants': str,
-            'water-project-cost-sharing': str,
-            'adoption-of-the-budget-resolution': str,
-            'physician-fee-freeze': str,
-            'el-salvador-adi': str,
-            'religious-groups-in-schools': str,
-            'anti-satellite-test-ban': str,
-            'aid-to-nicaraguan-contras': str,
-            'mx-missile': str,
-            'immigration': str,
-            'synfuels-corporation-cutback': str,
-            'education-spending': str,
-            'superfund-right-to-sue': str,
-            'crime': str,
-            'duty-free-exports': str,
-            'export-administration-act-south-africa': str,
-        }
-    )
-    n_random_attributes = int((len(data.columns) - 1) ** 1/2)
-    rf = RandomForest(6, 'target', n_random_attributes)
-    cv = CrossValidator('target', rf)
-    # cv.cross_validate(data, 5, 1)
+    parser = argparse.ArgumentParser(description='Random Forest parser')
+    parser.add_argument('--opt', help='test-benchmark or test-dataset.', required=True)
+    parser.add_argument('--dataset', help='The dataset filename.', default='', required=False)
+    parser.add_argument('--target_attribute', help='Target attribute to be predicted.', default='', required=False)
+    parser.add_argument('--n_trees', help='The number of trees. The default is 5.', default=5, type=int, required=False)
+    parser.add_argument('--n_attributes', help='The number of attributes. The default is the squared root of all attributes.', default=-1, type=int, required=False)
+    parser.add_argument('--k_folds', help='The number of folds for cross validation. The default is 5', default=5, type=int, required=False)
+    parser.add_argument('--r', help='The number of repetitions for repeated cross validation. The default is 1', default=1, type=int, required=False)
+    args = parser.parse_args()
 
-    data = pd.read_csv(
-        'wine-recognition.tsv',
-        delimiter='\t'
-    )
-    n_random_attributes = int((len(data.columns) - 1) ** 1/2)
-    rf = RandomForest(8, 'target', n_random_attributes)
-    cv = CrossValidator('target', rf)
-    cv.cross_validate(data, 3, 1)
+    if args.opt == 'test-benchmark':
+        test_benchmark_numerical()
+        test_benchmark_categorical()
+
+    if args.opt == 'test-dataset':
+        if args.dataset == '' or not os.path.isfile('./' + args.dataset):
+            print('Dataset not found.')
+            return
+
+        try:
+            with open(args.dataset[:-3] + 'json', 'r') as filetypes:
+                types = json.load(filetypes)
+        except:
+            print('Dataset types not found, automatic types will be used.')
+            types = {}
+
+        data = pd.read_csv(
+            args.dataset,
+            delimiter='\t' if args.dataset[-3:] == 'tsv' else ',',
+            dtype=types
+        )
+
+        if args.target_attribute not in data.columns:
+            print("Target attribute doesn't exist on dataset.")
+            return
+
+        n_trees = args.n_trees
+        n_random_attributes = args.n_attributes
+        if n_random_attributes == -1:
+            n_random_attributes = int((len(data.columns) - 1) ** 1/2)
+
+        cv = CrossValidator(
+            RandomForest(n_trees, args.target_attribute, n_random_attributes)
+        )
+        cv.cross_validate(data, args.k_folds, args.r)
 
 
 if __name__ == "__main__":
