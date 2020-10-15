@@ -101,7 +101,7 @@ class RandomForest:
                 self.target_attribute,
                 self.n_random_attributes
             )
-            clf.fit(df)
+            clf.fit(df.iloc[n_baggings[i],:])
             self.trees[i] = clf
 
 
