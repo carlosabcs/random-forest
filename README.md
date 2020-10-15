@@ -8,7 +8,7 @@ This project requires two libraries which can be installed by running: `pip inst
 ## Execution
 The main script receives a set of arguments:
 - `--opt`: *test-benchmark* or *test-dataset*. The first one generates the decision tree for benchmark dataset in both versions, categorical and numerical. The second one executes the Random Forest algorithm to a dataset whose name and other parameters need to be passed as arguments too.
-- `--dataset`: the filename of the dataset. The dataset needs to be in the same path of the script. This argument is always required when the option is *test-dataset*. It is possible to add also a JSON file with the types of each attribute of the dataset, the file with this information should have the same name than the dataset.
+- `--dataset`: the filename of the dataset. The dataset needs to be in the **data** subfolder. This argument is always required when the option is *test-dataset*. It is possible to add also a JSON file with the types of each attribute of the dataset, the file with this information should have the same name than the dataset.
 - `--target_attribute`: the name of the attribute to be predicted. This argument is always required when the option is *test-dataset*.
 - `--n_trees`: the number of trees to be generated for the random forest algorithm. The default is 5.
 - `--n_attributes`: the number of attributes to be used for the decision trees generation. The default is the squared root of total attributes.

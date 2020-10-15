@@ -10,9 +10,11 @@ from decision_tree import DecisionTreeClassifier
 from random_forest import RandomForest
 from cross_validator import CrossValidator
 
+DATA_PATH = './data/'
+
 def test_benchmark_categorical():
     print('** Categorical benchmark **')
-    df = pd.read_csv('./dados_benchmark.csv', sep=';')
+    df = pd.read_csv(DATA_PATH + 'dados_benchmark.csv', sep=';')
     dt = DecisionTreeClassifier(
         target_attribute = 'Joga',
         n_random_attributes=4
@@ -23,7 +25,7 @@ def test_benchmark_categorical():
 
 def test_benchmark_numerical():
     print('\n** Numerical benchmark **')
-    df = pd.read_csv('./dados_benchmark_v2.csv', sep=';')
+    df = pd.read_csv(DATA_PATH + 'dados_benchmark_v2.csv', sep=';')
     dt = DecisionTreeClassifier(
         target_attribute = 'Joga',
         n_random_attributes=4
@@ -48,19 +50,19 @@ def main():
         test_benchmark_numerical()
 
     if args.opt == 'test-dataset':
-        if args.dataset == '' or not os.path.isfile('./' + args.dataset):
+        if args.dataset == '' or not os.path.isfile(DATA_PATH + args.dataset):
             print('Dataset not found.')
             return
 
         try:
-            with open(args.dataset[:-3] + 'json', 'r') as filetypes:
+            with open(DATA_PATH + args.dataset[:-3] + 'json', 'r') as filetypes:
                 types = json.load(filetypes)
         except:
             print('Dataset types not found, automatic types will be used.')
             types = {}
 
         data = pd.read_csv(
-            args.dataset,
+            DATA_PATH + args.dataset,
             delimiter='\t' if args.dataset[-3:] == 'tsv' else ',',
             dtype=types
         )
